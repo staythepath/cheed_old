@@ -19,11 +19,13 @@ class PostIngestor:
         embed_description = post_data['post'].get('embed_description', 'No embed description available')
         counts_comments = post_data['counts'].get('comments', 0)
         counts_score = post_data['counts'].get('score', 0)
+        url = post_data['post'].get('url', 'No URL available')
 
         # Save the post using DatabaseHandler
         self.db_handler.save_post({
             'post': {
                 'id': post_id,
+                'url': url,
                 'name': title,
                 'body': content,
                 'embed_title': embed_title,
