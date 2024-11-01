@@ -1,6 +1,6 @@
-from database.db_handler import DatabaseHandler
 from scrape.scrape import ArticleScraper
 from datetime import datetime
+from post_manager.models import Post
 
 def convert_datetime_to_string(data):
     # Recursively convert datetime objects to strings in the data structure
@@ -14,13 +14,9 @@ def convert_datetime_to_string(data):
         return data
 
 class PostIngestor:
-    def __init__(self):
-        self.db_handler = DatabaseHandler()
-
     def ingest_post(self, post):
         # Extracting necessary information from the response
         post_id = post['post']['id']
-        print(post_id)
         title = post['post'].get('name', 'No title available')
         content = post['post'].get('body', 'No content available')
         score = post['counts'].get('score', 0)
@@ -54,39 +50,32 @@ class PostIngestor:
         article_keywords = article_details.get('keywords', [])
         article_summary = article_details.get('summary', 'No summary available')
 
-        # Convert all datetime objects in post to strings before saving
-        post_data_to_save = convert_datetime_to_string({
-            'post': {
-                'id': post_id,
-                'url': url,
-                'name': title,
-                'body': content,
-                'embed_title': embed_title,
-                'embed_description': embed_description,
-            },
-            'community': {
-                'name': community,
-                'description': community_description,
-            },
-            'creator': {
-                'name': creator_name,
-                'avatar': creator_avatar,
-                'id': creator_id,
-            },
-            'counts': {
-                'comments': counts_comments,
-                'score': counts_score,
-            },
-            'article': {
-                'title': article_title,
-                'authors': article_authors,
-                'publication_date': publication_date,
-                'content': article_content,
-                'top_image': top_image,
-                'keywords': article_keywords,
-                'summary': article_summary
-            }
-        })
+        # Save the post using Django ORM
+        post_instance = Post(
+            post_id=post_id,
+            community_id=post['community'].get('id', None),
+            creator_id=creator_id,
+            title=title,
+            content=content,
+            score=score,
+            community=community,
+            creator_name=creator_name,
+            creator_avatar=creator_avatar,
+            community_description=community_description,
+            embed_title=embed_title,
+            embed_description=embed_description,
+            counts_comments=counts_comments,
+            counts_score=counts_score,
+            url=url,
+            article_title=article_title,
+            article_authors=article_authors,
+            publication_date=publication_date,
+            article_content=article_content,
+            top_image=top_image,
+            article_keywords=article_keywords,
+            article_summary=article_summary
+        )
 
-        # Save the post using DatabaseHandler
-        self.db_handler.save_post(post_data_to_save)
+        # Check if post already exists to prevent duplicates
+        if not Post.objects.filter(post_id=post_id).exists():
+            post_instance.save()
