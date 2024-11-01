@@ -32,6 +32,7 @@ class Post(Base):
     counts_comments = Column(Integer)
     counts_score = Column(Integer)
     full_post = Column(JSON)  # Store the full JSON response
+    url = Column(String)  # Adding URL field
 
     article_title = Column(String)
     article_authors = Column(JSON)  # Storing authors list as JSON
@@ -64,6 +65,7 @@ class DatabaseHandler:
         embed_description = post_data['post'].get('embed_description', 'No embed description available')
         counts_comments = post_data['counts'].get('comments', 0)
         counts_score = post_data['counts'].get('score', 0)
+        url = post_data['post'].get('url', 'No URL available')
         full_post = post_data
 
         # If article details are available in `post_data`, fetch them
@@ -92,6 +94,7 @@ class DatabaseHandler:
             embed_description=embed_description,
             counts_comments=counts_comments,
             counts_score=counts_score,
+            url=url,
             full_post=full_post,
             article_title=article_title,
             article_authors=article_authors,

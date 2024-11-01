@@ -15,6 +15,11 @@ db_handler = DatabaseHandler()
 def fetch_and_store_posts():
     posts = api_client.fetch_posts("opensource")  # Replace with actual community name
     for post in posts:
+        post_id = post['post']['id']
+        # Check if the post already exists in the database
+        if db_handler.get_post_by_id(post_id):
+            print(f"Post with id {post_id} already exists in the database. Skipping...")
+            continue
         # Pass each post directly to the PostIngestor without extra restructuring
         post_ingestor.ingest_post(post)
 
@@ -25,6 +30,7 @@ def query_and_print_post(post_id):
         print("Stored Post Information:")
         print(json.dumps({
             "post_id": post.post_id,
+            "url": post.url,
             "community_id": post.community_id,
             "creator_id": post.creator_id,
             "title": post.title,
@@ -45,7 +51,7 @@ def query_and_print_post(post_id):
             "top_image": post.top_image,
             "article_keywords": post.article_keywords,
             "article_summary": post.article_summary,
-            "full_post": post.full_post
+            #"full_post": post.full_post
         }, indent=4))
     else:
         print(f"Post with id {post_id} not found in the database.")
@@ -54,4 +60,4 @@ def query_and_print_post(post_id):
 fetch_and_store_posts()
 
 # Query and print one of the stored posts (replace with a real post_id to test)
-query_and_print_post("21972449")
+query_and_print_post("21976413")
