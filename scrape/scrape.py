@@ -31,4 +31,4 @@ if __name__ == "__main__":
     scraper = ArticleScraper("https://flathub.org/apps/net.newpipe.NewPipe")
     scraper.scrape()
     details = scraper.get_details()
-    print(details)
+    #print(details)

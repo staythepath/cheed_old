@@ -33,6 +33,14 @@ class Post(Base):
     counts_score = Column(Integer)
     full_post = Column(JSON)  # Store the full JSON response
 
+    article_title = Column(String)
+    article_authors = Column(JSON)  # Storing authors list as JSON
+    publication_date = Column(String)  # Store as string for simplicity (ISO 8601 format)
+    article_content = Column(Text)
+    top_image = Column(String)
+    article_keywords = Column(JSON)  # Storing keywords list as JSON
+    article_summary = Column(Text)
+
 # Initialize the database (creates tables if they do not exist)
 Base.metadata.create_all(engine)
 
@@ -41,9 +49,10 @@ class DatabaseHandler:
         self.session = session
 
     def save_post(self, post_data):
+        # Fetch details from the `post_data`
         post_id = post_data['post']['id']
-        community_id = post_data['post'].get('community_id', None)  # Fetching community_id
-        creator_id = post_data['creator'].get('id', None)  # Fetching creator_id
+        community_id = post_data['post'].get('community_id', None)
+        creator_id = post_data['creator'].get('id', None)
         title = post_data['post'].get('name', 'No title available')
         content = post_data['post'].get('body', 'No content available')
         score = post_data['counts'].get('score', 0)
@@ -57,7 +66,15 @@ class DatabaseHandler:
         counts_score = post_data['counts'].get('score', 0)
         full_post = post_data
 
-        
+        # If article details are available in `post_data`, fetch them
+        article_data = post_data.get('article', {})
+        article_title = article_data.get('title', 'No title available')
+        article_authors = article_data.get('authors', [])
+        publication_date = article_data.get('publication_date', 'No date available')
+        article_content = article_data.get('content', 'No content available')
+        top_image = article_data.get('top_image', 'No image available')
+        article_keywords = article_data.get('keywords', [])
+        article_summary = article_data.get('summary', 'No summary available')
 
         # Create a new post instance
         post = Post(
@@ -75,16 +92,23 @@ class DatabaseHandler:
             embed_description=embed_description,
             counts_comments=counts_comments,
             counts_score=counts_score,
-            full_post=full_post
+            full_post=full_post,
+            article_title=article_title,
+            article_authors=article_authors,
+            publication_date=publication_date,
+            article_content=article_content,
+            top_image=top_image,
+            article_keywords=article_keywords,
+            article_summary=article_summary
         )
 
         # Check if post already exists
         existing_post = self.session.query(Post).filter_by(post_id=str(post_id)).first()
         if existing_post:
-            print(f"Post with id {post_id} already exists.")
-            print(json.dumps(full_post, indent=4))
+            #print(f"Post with id {post_id} already exists.")
+            #print(json.dumps(full_post, indent=4))
             return
-        
+
         # Add to session and commit
         self.session.add(post)
         self.session.commit()
